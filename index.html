@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Access Restricted - Testing Environment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff41;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Matrix-style background effect */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.05;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Scanline effect */
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                transparent 50%,
+                rgba(0, 255, 65, 0.02) 50%
+            );
+            background-size: 100% 4px;
+            animation: scanline 8s linear infinite;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        @keyframes scanline {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100vh); }
+        }
+
+        /* Flicker effect */
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.95; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 900px;
+            padding: 60px 40px;
+            background: rgba(10, 10, 10, 0.85);
+            border: 2px solid #00ff41;
+            box-shadow:
+                0 0 20px rgba(0, 255, 65, 0.3),
+                inset 0 0 40px rgba(0, 255, 65, 0.05);
+            animation: flicker 3s infinite;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            margin-bottom: 30px;
+            animation: glitch 5s infinite;
+        }
+
+        @keyframes glitch {
+            0%, 90%, 100% { transform: translate(0); }
+            91% { transform: translate(-2px, 2px); }
+            92% { transform: translate(2px, -2px); }
+            93% { transform: translate(-2px, -2px); }
+            94% { transform: translate(2px, 2px); }
+            95% { transform: translate(0); }
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            letter-spacing: 8px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px #00ff41, 0 0 20px #00ff41;
+        }
+
+        .header .subtitle {
+            font-size: 1.1em;
+            letter-spacing: 4px;
+            color: #00cc33;
+            text-transform: uppercase;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                #00ff41 20%,
+                #00ff41 80%,
+                transparent
+            );
+            margin: 30px 0;
+            box-shadow: 0 0 10px #00ff41;
+        }
+
+        .message {
+            font-size: 1.2em;
+            line-height: 1.8;
+            margin-bottom: 40px;
+            text-shadow: 0 0 5px #00ff41;
+        }
+
+        .message .highlight {
+            color: #ffff00;
+            font-weight: bold;
+            text-shadow: 0 0 10px #ffff00;
+        }
+
+        .status-box {
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid #00ff41;
+            padding: 25px;
+            margin: 30px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .status-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(0, 255, 65, 0.1),
+                transparent
+            );
+            animation: scanning 3s infinite;
+        }
+
+        @keyframes scanning {
+            0% { left: -100%; }
+            100% { left: 200%; }
+        }
+
+        .status-box .label {
+            font-size: 0.9em;
+            color: #00cc33;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .status-box .value {
+            font-size: 1.3em;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px #00ff41;
+        }
+
+        .code-block {
+            background: #000;
+            border: 1px solid #00ff41;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: left;
+            font-size: 0.9em;
+            line-height: 1.6;
+            box-shadow: inset 0 0 20px rgba(0, 255, 65, 0.1);
+            overflow-x: auto;
+        }
+
+        .code-block .prompt {
+            color: #00ff41;
+            margin-right: 10px;
+        }
+
+        .code-block .command {
+            color: #ffff00;
+        }
+
+        .code-block .output {
+            color: #00cc33;
+            margin-left: 20px;
+        }
+
+        .warning {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff0000;
+            color: #ff4444;
+            font-size: 0.95em;
+            text-shadow: 0 0 5px #ff0000;
+        }
+
+        .warning-icon {
+            font-size: 1.5em;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        .footer {
+            margin-top: 40px;
+            font-size: 0.8em;
+            color: #006622;
+            letter-spacing: 2px;
+        }
+
+        .access-code {
+            display: inline-block;
+            font-family: 'Courier New', monospace;
+            font-size: 1.4em;
+            letter-spacing: 5px;
+            padding: 15px 30px;
+            background: #000;
+            border: 2px solid #00ff41;
+            color: #00ff41;
+            text-shadow: 0 0 10px #00ff41;
+            margin: 20px 0;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+        }
+
+        /* Blinking cursor */
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 20px;
+            background: #00ff41;
+            animation: blink 1s infinite;
+            margin-left: 5px;
+        }
+
+        @keyframes blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 20px;
+                margin: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+                letter-spacing: 4px;
+            }
+
+            .header .subtitle {
+                font-size: 0.9em;
+                letter-spacing: 2px;
+            }
+
+            .message {
+                font-size: 1em;
+            }
+
+            .access-code {
+                font-size: 1.1em;
+                letter-spacing: 3px;
+                padding: 12px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix-bg" id="matrix"></div>
+    <div class="scanline"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>ACCESS RESTRICTED</h1>
+            <div class="subtitle">Testing Environment Active</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="message">
+            This domain is currently <span class="highlight">RESERVED</span> for classified testing operations.
+            <br><br>
+            Access is limited to authorized personnel only.
+        </div>
+
+        <div class="status-box">
+            <div class="label">SYSTEM STATUS</div>
+            <div class="value">OPERATIONAL - TESTING IN PROGRESS<span class="cursor"></span></div>
+        </div>
+
+        <div class="code-block">
+            <div><span class="prompt">root@testing:~#</span> <span class="command">status --verbose</span></div>
+            <div class="output">► Initializing secure environment...</div>
+            <div class="output">► Running diagnostic protocols...</div>
+            <div class="output">► System integrity: VERIFIED</div>
+            <div class="output">► Security level: MAXIMUM</div>
+            <div class="output">► Test suite: ACTIVE</div>
+            <div class="output">✓ All systems nominal</div>
+        </div>
+
+        <div class="access-code">
+            CLEARANCE LEVEL: CLASSIFIED
+        </div>
+
+        <div class="message" style="font-size: 0.95em; margin-top: 30px;">
+            Unauthorized access attempts are being monitored and logged.
+            <br>
+            All activities are recorded for security purposes.
+        </div>
+
+        <div class="warning">
+            <div class="warning-icon">⚠</div>
+            <div>
+                <strong>NOTICE:</strong> This is a private testing environment.
+                <br>
+                If you reached this page by mistake, please close your browser.
+            </div>
+        </div>
+
+        <div class="footer">
+            DOMAIN: cloudproject.win | PROTOCOL: HTTPS/TLS 1.3 | STATUS: SECURED
+        </div>
+    </div>
+
+    <script>
+        // Matrix rain effect
+        const canvas = document.createElement('canvas');
+        const matrix = document.getElementById('matrix');
+        matrix.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const matrixChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()';
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+
+        for (let i = 0; i < columns; i++) {
+            drops[i] = Math.random() * -100;
+        }
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(10, 10, 10, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#00ff41';
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        setInterval(drawMatrix, 50);
+
+        // Resize canvas on window resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Random glitch effect on page load
+        setTimeout(() => {
+            document.querySelector('.container').style.animation = 'glitch 0.5s 3';
+        }, 1000);
+    </script>
+</body>
+</html>
